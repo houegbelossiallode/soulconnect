@@ -1,6 +1,6 @@
 FROM php:8.2-cli
 
-# Dépendances système nécessaires à GD et PostgreSQL
+# Dépendances système
 RUN apt-get update && apt-get install -y \
     git \
     zip \
@@ -11,6 +11,8 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libfreetype6-dev \
     libsodium-dev \
+    nodejs \
+    npm \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install zip pdo pdo_pgsql gd sodium
 
@@ -25,21 +27,14 @@ COPY . .
 # Installer dépendances PHP
 RUN composer install --no-dev --optimize-autoloader
 
-# Installer Node.js & npm (pour Vite)
-RUN apt-get update && apt-get install -y nodejs npm
-
-# Installer les packages frontend
+# Installer dépendances frontend
 RUN npm install
-
-
-# Compiler les assets pour production
 RUN npm run build
 
-
-# Permissions Laravel
+# Permissions
 RUN chmod -R 775 storage bootstrap/cache
 
-# Port Render
 EXPOSE 10000
 
-CMD php -S 0.0.0.0:10000 -t public
+# Lancer migrations + serveur
+CMD sh -c "php artisan migrate --force && php -S 0.0.0.0:10000 -t public"
