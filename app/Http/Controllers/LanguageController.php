@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
+
+class LanguageController extends Controller
+{
+    /**
+     * Switch the application language.
+     *
+     * @param  string  $locale
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function switch($locale)
+    {
+        $supportedLocales = explode(',', env('SUPPORTED_LOCALES', 'fr,en'));
+
+        if (in_array($locale, $supportedLocales)) {
+            Session::put('locale', $locale);
+        }
+
+        return redirect()->back();
+    }
+}
